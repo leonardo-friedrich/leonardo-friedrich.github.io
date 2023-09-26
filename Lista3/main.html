@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Árvore DOM</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .node {
+            margin-left: 20px; /* Para criar uma indentação visual para os filhos */
+        }
+    </style>
+</head>
+<body>
+    <div id="editor">
+        <!-- Sua árvore DOM aqui -->
+        <div class="node">Elemento 1</div>
+        <div class="node">Elemento 2</div>
+        <div class="node">Elemento 3</div>
+    </div>
+    <button id="removeBtn">Remover</button>
+    <button id="changeColorBtn">Mudar Cor</button>
+    <button id="addChildBtn">Adicionar Filho</button>
+    <input type="text" id="childNameInput" placeholder="Nome do Filho">
+    <script>
+        $(document).ready(function() {
+            let selectedElement = null;
+            const colors = ["yellow", "red", "green", "blue"];
+            let colorIndex = 0;
+
+            // Função para selecionar um elemento e aplicar estilo
+            function selectElement(element) {
+                if (selectedElement) {
+                    selectedElement.removeClass("selected");
+                    selectedElement.css("background-color", ""); // Remove a cor do item anterior
+                }
+                selectedElement = element;
+                selectedElement.addClass("selected");
+                selectedElement.css("background-color", colors[colorIndex]);
+            }
+
+            // Clique para selecionar elemento
+            $("#editor").on("click", ".node", function(event) {
+                event.stopPropagation(); // Impede a propagação do clique para pais
+                selectElement($(this));
+            });
+
+            // Botão para remover o elemento selecionado
+            $("#removeBtn").click(function() {
+                if (selectedElement) {
+                    selectedElement.remove();
+                    selectedElement = null;
+                }
+            });
+
+            // Botão para mudar a cor do elemento selecionado
+            $("#changeColorBtn").click(function() {
+                if (selectedElement) {
+                    colorIndex = (colorIndex + 1) % colors.length;
+                    selectedElement.css("background-color", colors[colorIndex]);
+                }
+            });
+
+            // Botão para adicionar um filho com o nome inserido
+            $("#addChildBtn").click(function() {
+                if (selectedElement) {
+                    const childName = $("#childNameInput").val();
+                    if (childName) {
+                        const newNode = $("<div class='node'>" + childName + "</div>");
+                        selectedElement.append(newNode);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
