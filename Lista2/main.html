@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avião e Míssil</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Definir o tamanho do canvas como o tamanho da janela
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const aviao = new Image();
+        aviao.src = 'aviao.png'; // Substitua 'aviao.png' com o caminho para a imagem do avião
+
+        const aviaoWidth = 50;
+        const aviaoHeight = 50;
+
+        const missile = new Image();
+        missile.src = 'missile.png'; // Substitua 'missile.png' com o caminho para a imagem do míssil
+
+        const missileWidth = 30;
+        const missileHeight = 10;
+
+        let aviaoX = canvas.width / 2;
+        let aviaoY = canvas.height / 2;
+
+        let missileX = canvas.width / 2; // Inicialmente, o míssil está no centro da tela
+        let missileY = canvas.height / 2; // Inicialmente, o míssil está no centro da tela
+        let missileSpeed = 1; // Velocidade mais lenta
+        explosionactive = false;
+        function desenharAviao(x, y) {
+            if (explosionactive==true) {
+                //imagem do avião precisa desaparecer
+                const explosion = new Image(); // imagem do avião se torna a da explosão
+                explosion.src = 'explosion.png'; // Substitua 'explosion.png' com o caminho para a imagem da explosão
+                ctx.drawImage(explosion, aviaoX - aviaoWidth / 2, aviaoY - aviaoHeight / 2, aviaoWidth, aviaoHeight);
+                missileActive = false;
+                missileX = canvas.width / 2; // Reposiciona o míssil no centro da tela
+                missileY = canvas.height / 2;
+            } else {
+                const aviao = new Image();
+                aviao.src = 'aviao.png'; // Substitua 'aviao.png' com o caminho para a imagem do avião
+                ctx.drawImage(aviao, x, y, aviaoWidth, aviaoHeight);
+            }
+        }
+
+        function desenharMissile(x, y, angle) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle); // Gira o míssil na direção do avião
+            ctx.drawImage(missile, -missileWidth / 2, -missileHeight / 2, missileWidth, missileHeight);
+            ctx.restore();
+        }
+
+        function atualizarMissile() {
+            if (missileActive) {
+                const angle = Math.atan2(aviaoY - missileY, aviaoX - missileX);
+                missileX += missileSpeed * Math.cos(angle);
+                missileY += missileSpeed * Math.sin(angle);
+
+                desenharMissile(missileX, missileY, angle);
+
+                // Verifica se o míssil atingiu o avião e quando ele atinge a imagem do avião se torna a da explosão
+                const distancia = Math.sqrt((aviaoX - missileX) ** 2 + (aviaoY - missileY) ** 2);
+                if (distancia < missileWidth / 2 + aviaoWidth / 2) {
+                    explosionactive = true;
+                    const explosion = new Image();  
+                    missileActive = false;
+                    missileX = canvas.width / 2; // Reposiciona o míssil no centro da tela
+                    missileY = canvas.height / 2;
+                }
+            }
+        }
+
+        function atualizarTela(event) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const mouseX = event.clientX;
+            const mouseY = event.clientY;
+
+            // Atualiza a posição do avião para seguir o cursor do mouse
+            aviaoX = mouseX - aviaoWidth / 2;
+            aviaoY = mouseY - aviaoHeight / 2;
+
+            // Desenhar o avião na nova posição
+            desenharAviao(aviaoX, aviaoY);
+
+            if (missileActive) {
+                atualizarMissile();
+            }
+        }
+
+        let missileActive = false;
+
+        // Disparar o míssil quando o botão direito do mouse é pressionado
+        canvas.addEventListener('contextmenu', (event) => {
+            event.preventDefault(); // Evita o menu de contexto padrão
+
+            if (!missileActive) {
+                missileActive = true;
+            }
+        });
+
+        // Carregar as imagens e iniciar a animação
+        aviao.onload = () => {
+            missile.onload = () => {
+                canvas.addEventListener('mousemove', atualizarTela);
+                desenharAviao(aviaoX, aviaoY);
+            };
+        };
+    </script>
+</body>
+</html>
